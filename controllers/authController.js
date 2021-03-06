@@ -1,9 +1,18 @@
 const { validationResult } = require("express-validator");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 const Users = require("../models/users");
 require("dotenv").config();
+
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.USER_EMAIL,
+    pass: process.env.USER_PASSWORD,
+  },
+});
 
 //post get home
 module.exports.getHome = (req, res, next) => {
@@ -101,7 +110,7 @@ module.exports.postSignin = async (req, res, next) => {
     //updating the user and adding jwt token
     const isSaved = await Users.updateOne(
       { _id: user._id },
-      { $set: { jwtToken: token } }
+      { $set: { jwtToken: token, isLoggedIn: true } }
     );
     //checking for a valid use update
     if (!isSaved) {
@@ -115,7 +124,7 @@ module.exports.postSignin = async (req, res, next) => {
       .cookie("jwt", token, {
         sameSite: "strict",
         path: "/",
-        expires: new Date(Date.now() + 1000 * 60 * 3),
+        expires: new Date(Date.now() + 1000 * 60 * 30),
         httpOnly: true,
       })
       .json({ userId: user._id });
@@ -168,16 +177,24 @@ module.exports.postForgot = async (req, res, next) => {
           msg: "Internal server error.",
         });
       }
-    });
-    //sending email to the user with the reset token
-    //there should be an actual email sending method
-    setTimeout(() => {
+      //sending email to the user with the reset token
+      //there should be an actual email sending method
+      const email = await transporter.sendMail({
+        from: "sambeetpanda507@gmail.com",
+        to: req.body.email,
+        subject: "biketherapist password reset",
+        html: `<p>you have requested for the password reset.</p>
+        <p>click <a href='http://localhost:3000/reset/${resetToken}'>here</a> to set a password.</p>`,
+      });
+      if (!email) {
+        return res.status(500).send("internal server error");
+      }
       res
         .status(200)
         .send(
           `An email with the instructions has been send to ${req.body.email}`
         );
-    }, 5000);
+    });
   } catch (err) {
     res.status(500).json({
       msg: err,
@@ -243,12 +260,11 @@ module.exports.patchReset = async (req, res, next) => {
 module.exports.getLogout = async (req, res, next) => {
   try {
     const token = req.cookies.jwt;
-    console.log("token : ", token);
     const verified = jwt.verify(token, process.env.JWT_SECTETKEY);
     const userId = verified.userId;
     const user = await Users.updateOne(
       { _id: userId },
-      { $set: { jwtToken: "" } }
+      { $set: { jwtToken: "", isLoggedIn: false } }
     );
     if (!user) {
       return res.status(500).json({
@@ -264,5 +280,29 @@ module.exports.getLogout = async (req, res, next) => {
     res.status(500).json({
       msg: err,
     });
+  }
+};
+
+//postUser
+
+module.exports.postUser = async (req, res, next) => {
+  try {
+    const userId = req.body.userId;
+    const token = req.cookies.jwt;
+    // console.log("userid", userId, "token: ", token);
+    if (!userId || !token) {
+      return res.status(200).json({ isLoggedin: false });
+    }
+    const verified = jwt.verify(token, process.env.JWT_SECTETKEY);
+    if (!verified) {
+      return res.status(200).json({ isLoggedin: false });
+    }
+    const user = await Users.findOne({ _id: userId });
+    if (!user) {
+      return res.status(200).json({ isLoggedin: false });
+    }
+    res.status(200).send({ isLoggedin: user.isLoggedIn });
+  } catch (error) {
+    console.log(error);
   }
 };

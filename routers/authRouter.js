@@ -82,4 +82,8 @@ router.patch(
 
 // http://localhost:8080/api/logout
 router.get("/logout", authController.getLogout);
+
+//http://localhost:8080/api/is-user
+router.post("/is-user", authController.postUser);
+
 module.exports = router;
