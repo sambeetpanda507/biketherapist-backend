@@ -1,11 +1,11 @@
 const express = require("express");
 const cors = require("cors");
-const bodyParser = require("body-parser");
 const helmet = require("helmet");
 const cookieParser = require("cookie-parser");
 const db = require("./utils/db.js");
 const authRouter = require("./routers/authRouter");
 const postRouter = require("./routers/postRouter");
+const bookingRouter = require("./routers/bookingRouter");
 
 require("dotenv").config();
 
@@ -16,12 +16,13 @@ const app = express();
 app.use(helmet());
 app.use(cors({ origin: process.env.BACKEND_URL, credentials: true }));
 app.use(cookieParser());
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
 
 //routers
 app.use("/api", authRouter);
 app.use("/api", postRouter);
+app.use("/api", bookingRouter);
 
 //connection with the database and listening to the server.
 db.then((connection) => {
