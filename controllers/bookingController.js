@@ -1,5 +1,7 @@
 const Customer = require("../models/customer");
 const { validationResult } = require("express-validator");
+const { db } = require("../models/customer");
+
 module.exports.postBooking = async (req, res, next) => {
   try {
     // validation result
@@ -12,8 +14,9 @@ module.exports.postBooking = async (req, res, next) => {
     }
     const {
       brand,
-      varient,
+      variant,
       bookingDate,
+      bookingTime,
       name,
       email,
       phone,
@@ -26,14 +29,15 @@ module.exports.postBooking = async (req, res, next) => {
       note,
     } = req.body;
     //check whether there is already a booking or not
-    const isPresent = await Customer.findOne({ email: email, phone: phone });
+    const isPresent = await Customer.findOne({ email: email });
     if (isPresent) {
-      return res.status(200).json({ msg: "you already have a booking !!!" });
+      return res.status(403).json({ msg: "you already have a booking !!!" });
     }
     const customer = new Customer({
       brand,
-      varient,
+      variant,
       bookingDate,
+      bookingTime,
       name,
       email,
       phone,
@@ -44,6 +48,7 @@ module.exports.postBooking = async (req, res, next) => {
       postalCode,
       dob,
       note,
+      status: "pending",
     });
     const isSaved = await customer.save();
     if (!isSaved) {
@@ -55,10 +60,45 @@ module.exports.postBooking = async (req, res, next) => {
       msg: "booked successfully",
     });
   } catch (err) {
-    //TODO: remove clg
-    console.log(err);
     res.status(500).json({
       msg: err,
     });
+  }
+};
+
+module.exports.getClients = async (req, res, next) => {
+  try {
+    const clients = await Customer.find({});
+    if (!clients) {
+      return res.status(500).json({ msg: "internal server error !!!" });
+    }
+    res.status(200).json(clients);
+  } catch (err) {
+    res.status(500).json({
+      msg: err,
+    });
+  }
+};
+
+module.exports.patchStatus = async (req, res, next) => {
+  try {
+    const { status } = req.body;
+    const { id } = req.query;
+    //check id present in db or not
+    const user = await Customer.findOne({ _id: id });
+    if (!user) {
+      return res.status(404).json({ msg: "user for this id does not found" });
+    }
+    const updateStatus = await Customer.updateOne(
+      { _id: user._id },
+      { $set: { status: status } }
+    );
+    if (!updateStatus) {
+      return res.status(500).send("internal server error");
+    }
+    res.status(201).json({ msg: "status updated successfully" });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send("internal server error");
   }
 };

@@ -6,12 +6,16 @@ const customerSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    varient: {
+    variant: {
       type: String,
       required: true,
     },
     bookingDate: {
       type: Date,
+      required: true,
+    },
+    bookingTime: {
+      type: String,
       required: true,
     },
     name: {
@@ -51,6 +55,9 @@ const customerSchema = new mongoose.Schema(
       required: true,
     },
     note: {
+      type: String,
+    },
+    status: {
       type: String,
     },
   },

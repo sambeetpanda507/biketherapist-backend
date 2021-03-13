@@ -9,7 +9,7 @@ router.post(
   "/booking",
   [
     body("brand", "please enter the brand").notEmpty(),
-    body("varient", "please enter the varient name").notEmpty(),
+    body("variant", "please enter the variant name").notEmpty(),
     body("bookingDate", "please enter a valid booking date")
       .notEmpty()
       .isISO8601()
@@ -44,5 +44,11 @@ router.post(
   ],
   bookingController.postBooking
 );
+
+//http://localhost:8080/api/clients
+router.get("/clients", bookingController.getClients);
+
+//http://localhost:8080/api/booking-status?id=sdfsdfsdfs&status=progress
+router.patch("/booking-status", bookingController.patchStatus);
 
 module.exports = router;

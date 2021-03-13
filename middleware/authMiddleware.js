@@ -6,6 +6,7 @@ async function auth(req, res, next) {
   try {
     // get jwt from cookie
     const token = req.cookies.jwt;
+    console.log("token : ", token);
     //is token present
     if (!token) {
       const err = new Error();
@@ -27,6 +28,7 @@ async function auth(req, res, next) {
     }
     next();
   } catch (err) {
+    console.log("catch block called ", err);
     res.status(403).json({
       message: "Unauthorised",
       error: err,
