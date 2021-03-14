@@ -6,6 +6,7 @@ const db = require("./utils/db.js");
 const authRouter = require("./routers/authRouter");
 const postRouter = require("./routers/postRouter");
 const bookingRouter = require("./routers/bookingRouter");
+const paymentRouter = require("./routers/paymentRouter");
 
 require("dotenv").config();
 
@@ -23,6 +24,7 @@ app.use(express.json());
 app.use("/api", authRouter);
 app.use("/api", postRouter);
 app.use("/api", bookingRouter);
+app.use("/api", paymentRouter);
 
 //connection with the database and listening to the server.
 db.then((connection) => {
