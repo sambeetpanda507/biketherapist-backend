@@ -28,11 +28,7 @@ module.exports.postBooking = async (req, res, next) => {
       dob,
       note,
     } = req.body;
-    //check whether there is already a booking or not
-    const isPresent = await Customer.findOne({ email: email });
-    if (isPresent) {
-      return res.status(403).json({ msg: "you already have a booking !!!" });
-    }
+
     const customer = new Customer({
       brand,
       variant,
@@ -99,6 +95,34 @@ module.exports.patchStatus = async (req, res, next) => {
     res.status(201).json({ msg: "status updated successfully" });
   } catch (error) {
     console.log(error);
+    return res.status(500).send("internal server error");
+  }
+};
+
+module.exports.postValidateBooking = async (req, res, next) => {
+  try {
+    // validation result
+    const validationErr = validationResult(req);
+    if (!validationErr.isEmpty()) {
+      return res.status(422).json({
+        msg: validationErr.array()[0].msg,
+        param: validationErr.array()[0].param,
+      });
+    }
+
+    const { email } = req.body;
+    //check whether there is already a booking or not
+
+    const isPresent = await Customer.findOne({ email: email });
+
+    if (isPresent) {
+      return res.status(403).json({ msg: "you already have a booking !!!" });
+    }
+
+    res.status(200).send("ok");
+  } catch (error) {
+    console.log(error);
+
     return res.status(500).send("internal server error");
   }
 };
