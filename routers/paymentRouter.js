@@ -11,4 +11,7 @@ router.post("/verify-payment", paymentController.postVerifyPayment);
 // http://localhost:8080/api/payments
 router.get("/payments", paymentController.getPayment);
 
+// http://localhost:8080/api/generate-invoice
+router.post("/generate-invoice", paymentController.postGenerateInvoice);
+
 module.exports = router;

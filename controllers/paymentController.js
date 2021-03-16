@@ -1,8 +1,10 @@
 const Razorpay = require("razorpay");
 const shortId = require("shortid");
 const crypto = require("crypto");
+var pdf = require("html-pdf");
+const pdfTemplate = require("../invoice/invoice");
 const Payment = require("../models/payment");
-const { response } = require("express");
+
 require("dotenv").config();
 
 const razorpayObj = new Razorpay({
@@ -72,4 +74,17 @@ module.exports.getPayment = async (req, res, next) => {
     console.log(error);
     res.status(500).json(error);
   }
+};
+
+module.exports.postGenerateInvoice = (req, res, next) => {
+  pdf.create(pdfTemplate(req.body), {}).toStream((err, stream) => {
+    if (err) {
+      console.log("error: ", err);
+      return res.status(500).send("internal server error");
+    }
+    res.setHeader("Content-type", "application/pdf");
+    res.setHeader("Content-disposition", "attachment; filename=invoice.pdf"); // Remove this if you don't want direct download
+    res.setHeader("Content-Length", "" + stream.length);
+    stream.pipe(res);
+  });
 };
