@@ -10,7 +10,7 @@ router.get("/", authController.getHome);
 router.post(
   "/signup",
   [
-    body("name", "please enter a valid name").notEmpty(),
+    body("name", "please enter a valid name"),
     body("email", "please enter a valid email")
       .trim()
       .normalizeEmail()
@@ -24,7 +24,6 @@ router.post(
       "password must containe atleast one number and one symbol with min 8 charactes"
     )
       .trim()
-      .notEmpty()
       .isLength({ min: 8 })
       .isAlphanumeric(),
   ],
@@ -85,5 +84,8 @@ router.get("/logout", authController.getLogout);
 
 //http://localhost:8080/api/is-user
 router.post("/is-user", authController.postUser);
+
+//http://localhost:8080/api/change-image
+router.post("/change-image", authController.postSaveImg);
 
 module.exports = router;

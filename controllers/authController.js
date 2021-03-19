@@ -49,7 +49,7 @@ module.exports.postSignup = async (req, res, next) => {
       name: req.body.name,
       email: req.body.email,
       phone: req.body.phone,
-      displayName: req.body.displayName,
+      imageUrl: req.body.profileImage,
       password: hashedPassword,
     });
     const isSaved = await user.save();
@@ -301,8 +301,31 @@ module.exports.postUser = async (req, res, next) => {
     if (!user) {
       return res.status(200).json({ isLoggedin: false });
     }
-    res.status(200).send({ isLoggedin: user.isLoggedIn });
+    res
+      .status(200)
+      .send({ isLoggedin: user.isLoggedIn, profileImg: user.profileImage });
   } catch (error) {
     console.log(error);
+  }
+};
+
+module.exports.postSaveImg = async (req, res, next) => {
+  try {
+    const { profileImage } = req.body;
+    const token = req.cookies.jwt;
+    const validate = jwt.verify(token, process.env.JWT_SECTETKEY);
+    const userId = validate.userId;
+    const update = await Users.updateOne(
+      { _id: userId },
+      { $set: { profileImage: profileImage } }
+    );
+    if (!update) {
+      return res.status(500).json({
+        msg: "Internal server error.",
+      });
+    }
+    res.status(201).json({ msg: profileImage });
+  } catch (err) {
+    console.log(err);
   }
 };
