@@ -1,4 +1,5 @@
 const express = require("express");
+const http = require("http");
 const cors = require("cors");
 const helmet = require("helmet");
 const cookieParser = require("cookie-parser");
@@ -12,6 +13,12 @@ require("dotenv").config();
 
 const port = process.env.PORT || 8081;
 const app = express();
+const server = http.createServer(app);
+const io = require("socket.io")(server, {
+  cors: {
+    origin: process.env.BACKEND_URL,
+  },
+});
 
 //middlewares
 app.use(helmet());
@@ -26,11 +33,20 @@ app.use("/api", postRouter);
 app.use("/api", bookingRouter);
 app.use("/api", paymentRouter);
 
+//socket connection
+io.on("connection", (socket) => {
+  socket.on("newBooking", (payload) => {
+    socket.broadcast.emit("notification", payload);
+  });
+  //disconnect event
+  socket.on("disconnect", () => {});
+});
+
 //connection with the database and listening to the server.
 db.then((connection) => {
   if (connection) {
     console.log("connected to the database");
-    app.listen(port, () => {
+    server.listen(port, () => {
       console.log(`server is listening on port: https://localhost:${port}`);
     });
   }
