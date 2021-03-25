@@ -58,7 +58,9 @@ module.exports.postVerifyPayment = (req, res, next) => {
       .catch((err) => {
         return res.status(500).json("internal server error");
       });
-  } else res.status(403).json({ msg: "invalid payment" });
+  } else {
+    res.status(403).json({ msg: "invalid payment" });
+  }
 };
 
 module.exports.getPayment = async (req, res, next) => {
