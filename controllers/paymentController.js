@@ -75,6 +75,7 @@ module.exports.getPayment = async (req, res, next) => {
 };
 
 module.exports.postGenerateInvoice = (req, res, next) => {
+  console.log("request body", req.body);
   pdf.create(pdfTemplate(req.body), {}).toStream((err, stream) => {
     if (err) {
       console.log("error: ", err);
