@@ -329,3 +329,65 @@ module.exports.postSaveImg = async (req, res, next) => {
     console.log(err);
   }
 };
+
+module.exports.postUpdateUser = async (req, res, next) => {
+  try {
+    const token = req.cookies.jwt;
+
+    const validate = jwt.verify(token, process.env.JWT_SECTETKEY);
+
+    const userId = validate.userId;
+
+    const { name, date, email, phone } = req.body;
+
+    const updateUser = await Users.updateOne(
+      { _id: userId },
+      {
+        $set: {
+          name: name || "",
+          dob: date || null,
+          email: email || "",
+          phone: phone || "",
+        },
+      }
+    );
+
+    if (!updateUser) {
+      return res.status(500).json({
+        msg: "unable to update the user",
+      });
+    }
+
+    res.status(201).json({ msg: "successfully updated" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      msg: error.message,
+      error,
+    });
+  }
+};
+
+module.exports.getUser = async (req, res, next) => {
+  try {
+    const token = req.cookies.jwt;
+
+    const validate = jwt.verify(token, process.env.JWT_SECTETKEY);
+
+    const userId = validate.userId;
+
+    const user = await Users.findOne({ _id: userId });
+
+    if (!user) {
+      return res.status(404).json({ msg: "no such user found" });
+    }
+
+    res.status(200).json(user);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      msg: error.message,
+      error,
+    });
+  }
+};

@@ -17,6 +17,9 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
     },
+    dob: {
+      type: String,
+    },
     isLoggedIn: {
       type: Boolean,
     },

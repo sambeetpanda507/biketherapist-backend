@@ -88,4 +88,9 @@ router.post("/is-user", authController.postUser);
 //http://localhost:8080/api/change-image
 router.post("/change-image", authController.postSaveImg);
 
+//http://localhost:8080/api/update-details
+router.post("/update-details", authController.postUpdateUser);
+
+// http://localhost:8080/api/get-user
+router.get("/get-user", authController.getUser);
 module.exports = router;
