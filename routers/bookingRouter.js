@@ -92,4 +92,7 @@ router.post(
   bookingController.postValidateBooking
 );
 
+// http://localhost:8080/api/customer-details?_id=sdfjskdjfhldfhsljf
+router.get("/customer-details", bookingController.getCustomer);
+
 module.exports = router;

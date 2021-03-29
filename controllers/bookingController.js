@@ -126,3 +126,17 @@ module.exports.postValidateBooking = async (req, res, next) => {
     return res.status(500).send("internal server error");
   }
 };
+
+module.exports.getCustomer = async (req, res, next) => {
+  try {
+    const customerId = req.query.customerId;
+    const customer = await Customer.findOne({ _id: customerId });
+    if (!customer) {
+      return res.status(404).json({ msg: "no such customer found" });
+    }
+    res.status(200).json({ customer });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ msg: error.message, error });
+  }
+};

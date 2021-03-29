@@ -65,7 +65,7 @@ module.exports.postVerifyPayment = (req, res, next) => {
   }
 };
 
-module.exports.getPayment = async (req, res, next) => {
+module.exports.getPayments = async (req, res, next) => {
   try {
     const payments = await Payment.find({});
     if (!payments) {
@@ -113,5 +113,20 @@ module.exports.postGenerateInvoice = async (req, res, next) => {
   } catch (err) {
     console.log(err);
     res.status(500).json({ msg: err.message, err });
+  }
+};
+
+// get a single payment according to the email id of the customer
+module.exports.getPaymentDetails = async (req, res, next) => {
+  try {
+    const email = req.query.email;
+    const paymentObj = await Payment.findOne({ email: email });
+    if (!paymentObj) {
+      return res.status(404).json({ msg: "Unable to find the invoice" });
+    }
+    res.status(200).json(paymentObj);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ msg: error.message, error });
   }
 };
