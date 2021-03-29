@@ -4,6 +4,8 @@ const crypto = require("crypto");
 var pdf = require("html-pdf");
 const pdfTemplate = require("../invoice/invoice");
 const Payment = require("../models/payment");
+const User = require("../models/users");
+const Customer = require("../models/customer");
 
 require("dotenv").config();
 
@@ -76,16 +78,40 @@ module.exports.getPayment = async (req, res, next) => {
   }
 };
 
-module.exports.postGenerateInvoice = (req, res, next) => {
-  console.log("request body", req.body);
-  pdf.create(pdfTemplate(req.body), {}).toStream((err, stream) => {
-    if (err) {
-      console.log("error: ", err);
-      return res.status(500).send("internal server error");
+module.exports.postGenerateInvoice = async (req, res, next) => {
+  try {
+    const paymentObj = await Payment.findOne({ paymentId: req.body.receiptId });
+
+    if (!paymentObj) {
+      return res.status(404).json({ msg: "Unable to find the invoice" });
     }
-    res.setHeader("Content-type", "application/pdf");
-    res.setHeader("Content-disposition", "attachment; filename=invoice.pdf"); // Remove this if you don't want direct download
-    res.setHeader("Content-Length", "" + stream.length);
-    stream.pipe(res);
-  });
+
+    const customerObj = await Customer.findOne({ email: paymentObj.email });
+
+    if (!customerObj) {
+      return res.status(404).json({ msg: "Unable to find the user" });
+    }
+
+    const isUpdate = await Payment.updateOne(
+      { paymentId: req.body.receiptId },
+      { $set: { customerId: customerObj._id } }
+    );
+
+    if (!isUpdate) {
+      return res.status(500).json({ msg: "Unable to update the invoice" });
+    }
+
+    pdf.create(pdfTemplate(req.body), {}).toStream((err, stream) => {
+      if (err) {
+        return res.status(500).send("internal server error");
+      }
+      res.setHeader("Content-type", "application/pdf");
+      res.setHeader("Content-disposition", "attachment; filename=invoice.pdf"); // Remove this if you don't want direct download
+      res.setHeader("Content-Length", "" + stream.length);
+      stream.pipe(res);
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ msg: err.message, err });
+  }
 };

@@ -18,6 +18,10 @@ const paymentSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    customerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Customer",
+    },
   },
   { timestamps: true }
 );
